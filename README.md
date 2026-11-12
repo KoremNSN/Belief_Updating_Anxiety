@@ -1,69 +1,56 @@
-# Computational Psychiatry of Anxiety: Behavioral & Cognitive Modeling Pipeline
+# Computational Psychiatry of Anxiety: Behavioral, NLP & Cognitive Modeling Pipeline
 
-This directory contains the behavioral preprocessing, natural language processing (NLP) on memory recall, and hierarchical Bayesian cognitive modeling pipeline to investigate how generalized anxiety symptoms (measured via GAD-7) relate to learning and decision-making.
+This repository contains the behavioral preprocessing, natural language processing (NLP) free-recall sentiment analysis, and hierarchical Bayesian cognitive modeling pipeline used to investigate how generalized anxiety symptoms (measured via GAD-7) relate to reinforcement learning, belief updating, and memory retrieval.
 
 ---
 
 ## 1. Sequential Notebook Flow
 
-The notebooks are organized in a sequential, step-by-step pipeline from raw data preprocessing to advanced model comparison:
+The notebooks are organized in a sequential pipeline from raw data preprocessing to hierarchical Bayesian model comparison:
 
-1. **[01_process_behavioral_data.ipynb](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/01_process_behavioral_data.ipynb)**
-   - **Purpose:** Preprocesses raw behavioral data and survey data. Drops missing choices, maps stimulus IDs to integer codes, scales trial rewards, and compiles the trial-by-trial combined dataset (`allsubs_combined.csv`).
-   *needs manual verification.
+1. **`01_process_behavioral_data.ipynb`**
+   - **Purpose:** Preprocesses raw Day 1 four-armed bandit behavioral logs, applies quality-control exclusions (removing reversal and incomplete subjects), and compiles `../data/allsubs_day1.csv`.
 
-2. **[02_free_recall_sentiment_analysis.ipynb](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/02_free_recall_sentiment_analysis.ipynb)**
-   - **Purpose:** Runs VADER (Valence Aware Dictionary and sEntiment Reasoner) sentiment analysis on free-recall textual data written by participants during the memory retrieval task.
+2. **`02_free_recall_sentiment_analysis.ipynb`**
+   - **Purpose:** Runs VADER (Valence Aware Dictionary and sEntiment Reasoner) sentiment analysis on free-recall narratives collected before and after the task on Day 1 and Day 2 (`../data/free_recall_nlp.csv`), testing within-subject valence/time shifts and continuous correlations with GAD-7 across the full sample.
 
-3. **[02_free_recall_extremes.ipynb](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/02_free_recall_extremes.ipynb)**
-   - **Purpose:** Sentiment analysis and GAD-7 correlation specifically filtering for and keeping only the extreme bottom 6 and top 6 subjects based on GAD-7 anxiety scores.
+3. **`02_free_recall_extremes.ipynb` & `anxiety_comparison.ipynb`**
+   - **Purpose:** Mixed-ANOVA and group comparisons of free-recall sentiment shifts comparing low-anxiety (`GAD-7 < 4`) vs. high-anxiety (`GAD-7 > 10`) participants across timepoints and valences.
 
-4. **[03_bayesian_nlp_memory_recall.ipynb](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/03_bayesian_nlp_memory_recall.ipynb)**
-   - **Purpose:** Fits a Bayesian linear regression model to examine if free-recall memory properties (specifically, the sentiment score of recalled items) interact with subject-level GAD-7 anxiety symptoms.
+4. **`02_free_recall_day2pre_vs_day1post.ipynb`**
+   - **Purpose:** Analyzes the overnight consolidation shift in free-recall sentiment from the end of Day 1 (**Day 1 Post**) to the start of Day 2 (**Day 2 Pre**), including full-sample paired $t$-tests, GAD-7 correlations, extreme-group Mixed ANOVAs, and clinical-severity power calculations.
 
-5. **[04_bayesian_robust_regression.ipynb](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/04_bayesian_robust_regression.ipynb)**
-   - **Purpose:** Employs robust linear regression (using Student-T likelihood to accommodate outliers) to evaluate whether Day 1 behavioral parameters credibly predict Day 2 learning performance.
+5. **`03_bayesian_nlp_memory_recall.ipynb`**
+   - **Purpose:** Fits a Bayesian robust linear regression model (Student-T likelihood) to test whether Day 1 free-recall sentiment shifts predict Day 2 Win and Lose memory accuracy.
 
-6. **[05_bayesian_rl_hierarchical_comparison.ipynb](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/05_bayesian_rl_hierarchical_comparison.ipynb)**
-   - **Purpose:** Formulates and compares three hierarchical reinforcement learning (RL) models (Single Alpha, Valence, and Task-domain models) using ArviZ's LOO cross-validation.
+6. **`04_bayesian_robust_regression.ipynb`**
+   - **Purpose:** Employs Bayesian robust linear regression (Student-T likelihood) to evaluate whether subject-level GAD-7 scores predict Day 2 Win and Lose memory performance.
 
-7. **[06_bayesian_rl_learning_rates_vs_gad7.ipynb](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/06_bayesian_rl_learning_rates_vs_gad7.ipynb)**
-   - **Purpose:** Restricts the winning RL model (Valence Model) by parameterizing positive and negative learning rates directly as log-linear functions of GAD-7 scores, isolating how anxiety symptoms influence reward vs. loss learning rates.
+7. **`05_bayesian_rl_hierarchical_comparison.ipynb`**
+   - **Purpose:** Fits and compares three hierarchical Rescorla-Wagner reinforcement learning (RL) models using PyMC (`numpyro` NUTS sampler) and ArviZ Leave-One-Out (LOO) cross-validation:
+     - **Model 1 (`Single Alpha`):** Single learning rate ($\alpha$) and inverse temperature ($\beta$).
+     - **Model 2 (`Valence`):** Separate learning rates for positive ($\alpha_{\text{pos}}$) and negative ($\alpha_{\text{neg}}$) prediction errors, plus $\beta$.
+     - **Model 3 (`Task`):** Separate learning rates ($\alpha_{\text{win}}, \alpha_{\text{lose}}$) and inverse temperatures ($\beta_{\text{win}}, \beta_{\text{lose}}$) by task domain.
 
-8. **[07_bayesian_kalman_filter_vs_gad7.ipynb](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/07_bayesian_kalman_filter_vs_gad7.ipynb)**
+8. **`06_bayesian_rl_learning_rates_vs_gad7.ipynb`**
+   - **Purpose:** Extends the winning Valence RL model by parameterizing $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$ on the logit scale as linear functions of normalized GAD-7 scores, directly testing how anxiety modulates learning from positive vs. negative prediction errors.
+
+9. **`07_bayesian_kalman_filter_vs_gad7.ipynb`**
    - **Purpose:** Implements a Hierarchical Bayesian Kalman Filter on the bandit task, testing whether GAD-7 anxiety scores predict subject-level belief drift (Process Noise $Q$) and observation uncertainty (Observation Noise $R$).
 
-9. **[08_model_comparison_rl_vs_kalman.ipynb](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/08_model_comparison_rl_vs_kalman.ipynb)**
-   - **Purpose:** Performs a formal model comparison using LOO cross-validation between the Rescorla-Wagner (Valence RL) model and the standard Kalman Filter model (non-GAD-parameterized) to determine which mathematical framework best explains participant choices.
+10. **`08_model_comparison_rl_vs_kalman.ipynb`**
+    - **Purpose:** Performs a formal LOO cross-validation model comparison between the hierarchical Rescorla-Wagner (Valence) model and the hierarchical Kalman Filter model to determine which computational framework better accounts for participant choices.
 
 ---
 
 ## 2. Supporting Python Scripts
 
-### Modeling & Utility Helper
+### Modeling Utilities
+- **`learning_functions.py`:** PyTensor `scan` step functions for the hierarchical reinforcement learning models (`update_q_hierarchical`, `update_m2_hierarchical`, and `update_m3_hierarchical`).
 
-- **[learning_functions.py](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/learning_functions.py):** Contains the PyTensor scan step functions for reinforcement learning models (`update_q_hierarchical`, `update_m2_hierarchical`, and `update_m3_hierarchical`).
-
-### Data Pipeline Scripts
-
-- **[process_data.py](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/process_data.py):** Processes initial raw behavioral logs.
-- **[merge_data.py](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/merge_data.py):** Merges Day 1 behavior, Day 2 behavior, and survey scores.
-- **[process_survey.py](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/process_survey.py):** Cleans GAD-7 and other survey questions.
-- **[process_day2.py](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/process_day2.py) & [process_day2_correct.py](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/process_day2_correct.py):** Preprocesses Day 2 outcome variables.
-- **[extract_free_recall.py](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/extract_free_recall.py) & [run_vader_nlp.py](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/run_vader_nlp.py):** Sentiment and NLP feature extraction utilities.
-
----
-
-## 3. Rebuilding the Notebooks
-
-The python scripts used to programmatically generate and update these Jupyter notebooks are housed in the **[notebook_builders/](file:///Users/nachshonkorem/Documents/AntiGrav/Anxiety/code/notebook_builders/)** folder.
-
-To regenerate any notebook, run its respective builder script from this root directory:
-
-```bash
-python notebook_builders/build_kalman_notebook.py
-python notebook_builders/build_compare_notebook.py
-python notebook_builders/build_sentiment_analysis_extremes_notebook.py
-```
-
-*(All builder scripts have been updated to write directly to the new sequential notebook filenames in this directory.)*
+### Data Preprocessing Scripts
+- **`process_data.py`:** Processes raw Day 1 behavioral trial logs into `../data/allsubs_day1.csv`.
+- **`process_day2.py` & `process_day2_correct.py`:** Processes Day 2 memory test logs and computes per-subject Win/Lose recall accuracy (`../data/allsubs_day2.csv`).
+- **`process_survey.py`:** Cleans Qualtrics assessment logs and computes total GAD-7 scores (`../data/survey.csv`).
+- **`merge_data.py`:** Merges Day 1 trial-by-trial behavior, Day 2 memory accuracy, and GAD-7 survey scores into `../data/allsubs_combined.csv`.
+- **`extract_free_recall.py` & `run_vader_nlp.py`:** Extracts Day 1 and Day 2 pre/post free-recall text responses (`../data/free_recall.csv`) and computes VADER sentiment scores (`../data/free_recall_nlp.csv`).
