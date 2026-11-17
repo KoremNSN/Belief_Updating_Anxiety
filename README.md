@@ -2,6 +2,8 @@
 
 This repository contains the behavioral preprocessing, natural language processing (NLP) free-recall sentiment analysis, and hierarchical Bayesian cognitive modeling pipeline used to investigate how generalized anxiety symptoms (measured via GAD-7) relate to reinforcement learning, belief updating, and memory retrieval.
 
+All Bayesian cognitive models are optimized for **PyMC v6 (`pymc 6.0+`, `pytensor 3.0+`, `arviz 1.1+`)** using the Rust-based **`nutpie`** sampler (`nuts_sampler="nutpie"`) and subject-vectorized 2D `pytensor.scan` loops (`98` trial steps across all `67` participants in parallel).
+
 ---
 
 ## 1. Sequential Notebook Flow
@@ -21,13 +23,13 @@ The notebooks are organized in a sequential pipeline from raw data preprocessing
    - **Purpose:** Analyzes the overnight consolidation shift in free-recall sentiment from the end of Day 1 (**Day 1 Post**) to the start of Day 2 (**Day 2 Pre**), including full-sample paired $t$-tests, GAD-7 correlations, extreme-group Mixed ANOVAs, and clinical-severity power calculations.
 
 5. **`03_bayesian_nlp_memory_recall.ipynb`**
-   - **Purpose:** Fits a Bayesian robust linear regression model (Student-T likelihood) to test whether Day 1 free-recall sentiment shifts predict Day 2 Win and Lose memory accuracy.
+   - **Purpose:** Fits a Bayesian robust linear regression model (Student-T likelihood via `nutpie`) to test whether Day 1 free-recall sentiment shifts predict Day 2 Win and Lose memory accuracy.
 
 6. **`04_bayesian_robust_regression.ipynb`**
-   - **Purpose:** Employs Bayesian robust linear regression (Student-T likelihood) to evaluate whether subject-level GAD-7 scores predict Day 2 Win and Lose memory performance.
+   - **Purpose:** Employs Bayesian robust linear regression (Student-T likelihood via `nutpie`) to evaluate whether subject-level GAD-7 scores predict Day 2 Win and Lose memory performance.
 
 7. **`05_bayesian_rl_hierarchical_comparison.ipynb`**
-   - **Purpose:** Fits and compares four hierarchical Rescorla-Wagner reinforcement learning (RL) models using PyMC (`numpyro` NUTS sampler) and ArviZ Leave-One-Out (LOO) cross-validation:
+   - **Purpose:** Fits and compares four hierarchical Rescorla-Wagner reinforcement learning (RL) models using PyMC v6 (`nutpie` NUTS sampler, vectorized across participants) and ArviZ Leave-One-Out (LOO) cross-validation:
      - **Model 1 (`Single Alpha`):** Single learning rate ($\alpha$) and inverse temperature ($\beta$).
      - **Model 2 (`Valence`):** Separate learning rates for positive ($\alpha_{\text{pos}}$) and negative ($\alpha_{\text{neg}}$) prediction errors, plus $\beta$.
      - **Model 3 (`Task`):** Separate learning rates ($\alpha_{\text{win}}, \alpha_{\text{lose}}$) and inverse temperatures ($\beta_{\text{win}}, \beta_{\text{lose}}$) by task domain.
@@ -40,7 +42,7 @@ The notebooks are organized in a sequential pipeline from raw data preprocessing
    - **Purpose (Subject-Specific Alphas & Variance Explained by GAD-7):** Estimates **subject-specific** positive and negative learning rates by including hierarchical individual random effects alongside GAD-7 (`logit(alpha_i) = intercept + slope * GAD7_norm_i + z_i * sigma`). Quantifies the proportion of between-subject variance ($R^2$) in $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$ explained by GAD-7 (both on the latent logit scale and across subject-level posterior means) and plots the true subject-level correlation between $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$.
 
 10. **`07_bayesian_kalman_filter_vs_gad7.ipynb`**
-    - **Purpose:** Implements a Hierarchical Bayesian Kalman Filter on the bandit task, testing whether GAD-7 anxiety scores predict subject-level belief drift (Process Noise $Q$) and observation uncertainty (Observation Noise $R$).
+    - **Purpose:** Implements a vectorized Hierarchical Bayesian Kalman Filter on the bandit task (`nutpie`), testing whether GAD-7 anxiety scores predict subject-level belief drift (Process Noise $Q$) and observation uncertainty (Observation Noise $R$).
 
 11. **`08_model_comparison_rl_vs_kalman.ipynb`**
     - **Purpose:** Performs a formal LOO cross-validation model comparison between the hierarchical Rescorla-Wagner (Valence) model and the hierarchical Kalman Filter model to determine which computational framework better accounts for participant choices.
@@ -50,7 +52,7 @@ The notebooks are organized in a sequential pipeline from raw data preprocessing
 ## 2. Supporting Python Scripts
 
 ### Modeling Utilities
-- **`learning_functions.py`:** PyTensor `scan` step functions for the hierarchical reinforcement learning models (`update_q_hierarchical`, `update_m2_hierarchical`, `update_m3_hierarchical`, and `update_m4_hierarchical`).
+- **`learning_functions.py`:** Vectorized PyTensor `scan` step functions (`prepare_vectorized_bandit_data`, `step_m1_vec`, `step_m2_vec`, `step_m3_vec`, `step_m4_vec`, `step_kalman_vec`) and PyMC v6 / ArviZ 1.1+ `DataTree` helpers (`add_bernoulli_ll`, `get_hdi_bounds`, `plot_posterior_hdi`).
 
 ### Data Preprocessing Scripts
 - **`process_data.py`:** Processes raw Day 1 behavioral trial logs into `../data/allsubs_day1.csv`.
