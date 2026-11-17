@@ -2,7 +2,7 @@
 
 This repository contains the behavioral preprocessing, natural language processing (NLP) free-recall sentiment analysis, and hierarchical Bayesian cognitive modeling pipeline used to investigate how generalized anxiety symptoms (measured via GAD-7) relate to reinforcement learning, belief updating, and memory retrieval.
 
-All Bayesian cognitive models are optimized for **PyMC v6 (`pymc 6.0+`, `pytensor 3.0+`, `arviz 1.1+`)** using the Rust-based **`nutpie`** sampler (`nuts_sampler="nutpie"`) and subject-vectorized 2D `pytensor.scan` loops (`98` trial steps across all `67` participants in parallel).
+All Bayesian cognitive models are optimized for **PyMC v6 (`pymc 6.0+`, `pytensor 3.0+`, `arviz 1.1+`)** using the Rust-based **`nutpie`** sampler (`nuts_sampler="nutpie"`) and subject-vectorized 2D `pytensor.scan` loops (`100` trial steps across all `67` participants in parallel).
 
 ---
 
@@ -36,15 +36,21 @@ The notebooks are organized in a sequential pipeline from raw data preprocessing
      - **Model 4 (`Task x Valence`):** Four learning rates split by both task domain and prediction error valence ($\alpha_{\text{win,pos}}, \alpha_{\text{win,neg}}, \alpha_{\text{lose,pos}}, \alpha_{\text{lose,neg}}$), plus $\beta$.
 
 8. **`06_bayesian_rl_learning_rates_vs_gad7.ipynb`**
-   - **Purpose (Constrained Direct-Effect GAD-7 Model):** Restricts between-subject variation in the Valence RL model so that **only** a participant's GAD-7 score can change $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$ across participants (`alpha_i = invlogit(intercept + slope * GAD7_norm_i)`, with no individual random offset). This directly isolates the population-level effect of GAD-7 on positive vs. negative prediction-error learning rates.
+   - **Purpose (Constrained Direct-Effect GAD-7 2-Alpha Valence Model):** Restricts between-subject variation in the 2-alpha Valence RL model so that **only** a participant's GAD-7 score can change $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$ across participants (`alpha_i = invlogit(intercept + slope * GAD7_norm_i)`).
 
 9. **`06b_subject_specific_alphas_gad7_variance.ipynb`**
-   - **Purpose (Subject-Specific Alphas & Variance Explained by GAD-7):** Estimates **subject-specific** positive and negative learning rates by including hierarchical individual random effects alongside GAD-7 (`logit(alpha_i) = intercept + slope * GAD7_norm_i + z_i * sigma`). Quantifies the proportion of between-subject variance ($R^2$) in $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$ explained by GAD-7 (both on the latent logit scale and across subject-level posterior means) and plots the true subject-level correlation between $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$.
+   - **Purpose (Subject-Specific 2-Alpha Valence & Variance Explained by GAD-7):** Estimates **subject-specific** $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$ by including hierarchical individual random effects alongside GAD-7 (`logit(alpha_i) = intercept + slope * GAD7_norm_i + z_i * sigma`), quantifying the variance ($R^2$) explained by GAD-7 and the correlation between $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$.
 
-10. **`07_bayesian_kalman_filter_vs_gad7.ipynb`**
+10. **`16_bayesian_rl_4alphas_vs_gad7.ipynb`**
+    - **Purpose (Constrained Direct-Effect GAD-7 4-Alpha Task $\times$ Valence Model):** Restricts between-subject variation in the winning 4-learning-rate model (`Task x Valence`) so that **only** a participant's GAD-7 score can change $\alpha_{\text{win,pos}}, \alpha_{\text{win,neg}}, \alpha_{\text{lose,pos}}, \alpha_{\text{lose,neg}}$ across participants.
+
+11. **`16b_subject_specific_4alphas_gad7_variance.ipynb`**
+    - **Purpose (Subject-Specific 4-Alpha Task $\times$ Valence & Variance Explained by GAD-7):** Estimates **subject-specific** $\alpha_{\text{win,pos}}, \alpha_{\text{win,neg}}, \alpha_{\text{lose,pos}}, \alpha_{\text{lose,neg}}$ with hierarchical random effects alongside GAD-7, quantifying the variance ($R^2$) explained by GAD-7 for each of the four learning rates and plotting the $4 \times 4$ subject-level correlation matrix.
+
+12. **`07_bayesian_kalman_filter_vs_gad7.ipynb`**
     - **Purpose:** Implements a vectorized Hierarchical Bayesian Kalman Filter on the bandit task (`nutpie`), testing whether GAD-7 anxiety scores predict subject-level belief drift (Process Noise $Q$) and observation uncertainty (Observation Noise $R$).
 
-11. **`08_model_comparison_rl_vs_kalman.ipynb`**
+13. **`08_model_comparison_rl_vs_kalman.ipynb`**
     - **Purpose:** Performs a formal LOO cross-validation model comparison between the hierarchical Rescorla-Wagner (Valence) model and the hierarchical Kalman Filter model to determine which computational framework better accounts for participant choices.
 
 ---
