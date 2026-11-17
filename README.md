@@ -33,12 +33,15 @@ The notebooks are organized in a sequential pipeline from raw data preprocessing
      - **Model 3 (`Task`):** Separate learning rates ($\alpha_{\text{win}}, \alpha_{\text{lose}}$) and inverse temperatures ($\beta_{\text{win}}, \beta_{\text{lose}}$) by task domain.
 
 8. **`06_bayesian_rl_learning_rates_vs_gad7.ipynb`**
-   - **Purpose:** Extends the winning Valence RL model by parameterizing $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$ on the logit scale as linear functions of normalized GAD-7 scores, directly testing how anxiety modulates learning from positive vs. negative prediction errors.
+   - **Purpose (Constrained Direct-Effect GAD-7 Model):** Restricts between-subject variation in the Valence RL model so that **only** a participant's GAD-7 score can change $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$ across participants (`alpha_i = invlogit(intercept + slope * GAD7_norm_i)`, with no individual random offset). This directly isolates the population-level effect of GAD-7 on positive vs. negative prediction-error learning rates.
 
-9. **`07_bayesian_kalman_filter_vs_gad7.ipynb`**
-   - **Purpose:** Implements a Hierarchical Bayesian Kalman Filter on the bandit task, testing whether GAD-7 anxiety scores predict subject-level belief drift (Process Noise $Q$) and observation uncertainty (Observation Noise $R$).
+9. **`06b_subject_specific_alphas_gad7_variance.ipynb`**
+   - **Purpose (Subject-Specific Alphas & Variance Explained by GAD-7):** Estimates **subject-specific** positive and negative learning rates by including hierarchical individual random effects alongside GAD-7 (`logit(alpha_i) = intercept + slope * GAD7_norm_i + z_i * sigma`). Quantifies the proportion of between-subject variance ($R^2$) in $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$ explained by GAD-7 (both on the latent logit scale and across subject-level posterior means) and plots the true subject-level correlation between $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$.
 
-10. **`08_model_comparison_rl_vs_kalman.ipynb`**
+10. **`07_bayesian_kalman_filter_vs_gad7.ipynb`**
+    - **Purpose:** Implements a Hierarchical Bayesian Kalman Filter on the bandit task, testing whether GAD-7 anxiety scores predict subject-level belief drift (Process Noise $Q$) and observation uncertainty (Observation Noise $R$).
+
+11. **`08_model_comparison_rl_vs_kalman.ipynb`**
     - **Purpose:** Performs a formal LOO cross-validation model comparison between the hierarchical Rescorla-Wagner (Valence) model and the hierarchical Kalman Filter model to determine which computational framework better accounts for participant choices.
 
 ---
