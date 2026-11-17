@@ -16,7 +16,7 @@ def update_q_hierarchical(left, right, chosen, rew, is_first, sub, Q_t, alpha):
     PE = rew - Q_t_reset[sub, chosen]
     Q_t_next = pt.set_subtensor(Q_t_reset[sub, chosen], Q_t_reset[sub, chosen] + alpha[sub] * PE)
     
-    return Q_t_next, q_left, q_right, Q_t_reset
+    return Q_t_next, q_left, q_right, Q_t_reset_row
 
 def update_m2_hierarchical(left, right, chosen, rew, is_first, sub, Q_t, alpha_pos, alpha_neg):
     """
@@ -33,7 +33,7 @@ def update_m2_hierarchical(left, right, chosen, rew, is_first, sub, Q_t, alpha_p
     
     Q_t_next = pt.set_subtensor(Q_t_reset[sub, chosen], Q_t_reset[sub, chosen] + alpha_val * PE)
     
-    return Q_t_next, q_left, q_right, Q_t_reset
+    return Q_t_next, q_left, q_right, Q_t_reset_row
 
 def update_m3_hierarchical(left, right, chosen, rew, is_first, is_win_trial, sub, Q_t, alpha_win, alpha_lose):
     """
@@ -50,4 +50,25 @@ def update_m3_hierarchical(left, right, chosen, rew, is_first, is_win_trial, sub
     
     Q_t_next = pt.set_subtensor(Q_t_reset[sub, chosen], Q_t_reset[sub, chosen] + alpha_val * PE)
     
-    return Q_t_next, q_left, q_right, Q_t_reset
+    return Q_t_next, q_left, q_right, Q_t_reset_row
+
+def update_m4_hierarchical(left, right, chosen, rew, is_first, is_win_trial, sub, Q_t,
+                           alpha_win_pos, alpha_win_neg, alpha_lose_pos, alpha_lose_neg):
+    """
+    Hierarchical Update Function: Task x Valence (4 learning rates:
+    Win-Positive PE, Win-Negative PE, Lose-Positive PE, Lose-Negative PE)
+    """
+    Q_t_reset_row = pt.switch(is_first, pt.zeros(4), Q_t[sub])
+    Q_t_reset = pt.set_subtensor(Q_t[sub], Q_t_reset_row)
+    
+    q_left = Q_t_reset[sub, left]
+    q_right = Q_t_reset[sub, right]
+    
+    PE = rew - Q_t_reset[sub, chosen]
+    alpha_win_val = pt.switch(PE > 0, alpha_win_pos[sub], alpha_win_neg[sub])
+    alpha_lose_val = pt.switch(PE > 0, alpha_lose_pos[sub], alpha_lose_neg[sub])
+    alpha_val = pt.switch(is_win_trial, alpha_win_val, alpha_lose_val)
+    
+    Q_t_next = pt.set_subtensor(Q_t_reset[sub, chosen], Q_t_reset[sub, chosen] + alpha_val * PE)
+    
+    return Q_t_next, q_left, q_right, Q_t_reset_row

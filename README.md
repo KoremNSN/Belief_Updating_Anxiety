@@ -27,10 +27,11 @@ The notebooks are organized in a sequential pipeline from raw data preprocessing
    - **Purpose:** Employs Bayesian robust linear regression (Student-T likelihood) to evaluate whether subject-level GAD-7 scores predict Day 2 Win and Lose memory performance.
 
 7. **`05_bayesian_rl_hierarchical_comparison.ipynb`**
-   - **Purpose:** Fits and compares three hierarchical Rescorla-Wagner reinforcement learning (RL) models using PyMC (`numpyro` NUTS sampler) and ArviZ Leave-One-Out (LOO) cross-validation:
+   - **Purpose:** Fits and compares four hierarchical Rescorla-Wagner reinforcement learning (RL) models using PyMC (`numpyro` NUTS sampler) and ArviZ Leave-One-Out (LOO) cross-validation:
      - **Model 1 (`Single Alpha`):** Single learning rate ($\alpha$) and inverse temperature ($\beta$).
      - **Model 2 (`Valence`):** Separate learning rates for positive ($\alpha_{\text{pos}}$) and negative ($\alpha_{\text{neg}}$) prediction errors, plus $\beta$.
      - **Model 3 (`Task`):** Separate learning rates ($\alpha_{\text{win}}, \alpha_{\text{lose}}$) and inverse temperatures ($\beta_{\text{win}}, \beta_{\text{lose}}$) by task domain.
+     - **Model 4 (`Task x Valence`):** Four learning rates split by both task domain and prediction error valence ($\alpha_{\text{win,pos}}, \alpha_{\text{win,neg}}, \alpha_{\text{lose,pos}}, \alpha_{\text{lose,neg}}$), plus $\beta$.
 
 8. **`06_bayesian_rl_learning_rates_vs_gad7.ipynb`**
    - **Purpose (Constrained Direct-Effect GAD-7 Model):** Restricts between-subject variation in the Valence RL model so that **only** a participant's GAD-7 score can change $\alpha_{\text{pos}}$ and $\alpha_{\text{neg}}$ across participants (`alpha_i = invlogit(intercept + slope * GAD7_norm_i)`, with no individual random offset). This directly isolates the population-level effect of GAD-7 on positive vs. negative prediction-error learning rates.
@@ -49,7 +50,7 @@ The notebooks are organized in a sequential pipeline from raw data preprocessing
 ## 2. Supporting Python Scripts
 
 ### Modeling Utilities
-- **`learning_functions.py`:** PyTensor `scan` step functions for the hierarchical reinforcement learning models (`update_q_hierarchical`, `update_m2_hierarchical`, and `update_m3_hierarchical`).
+- **`learning_functions.py`:** PyTensor `scan` step functions for the hierarchical reinforcement learning models (`update_q_hierarchical`, `update_m2_hierarchical`, `update_m3_hierarchical`, and `update_m4_hierarchical`).
 
 ### Data Preprocessing Scripts
 - **`process_data.py`:** Processes raw Day 1 behavioral trial logs into `../data/allsubs_day1.csv`.
